@@ -13,7 +13,7 @@ import qualified Graphics.Gloss as G
 width = 500
 height = 700
 maxRad = 80
-minRad = 10
+minRad = 5 
 
 maxX = width / 2
 minX = -maxX
