@@ -29,9 +29,6 @@ widthHeight = (round width, round height)
 getBoundedValue :: Float -> Float -> Float -> Float
 getBoundedValue min max value = min + value * (max - min)
 
-nRandomFloats :: Int -> IO [Float]
-nRandomFloats count = replicateM count (randomIO :: IO Float)
-
 getMaxNonIntersectingCircle :: UG.Circle -> [UG.Circle] -> Float -> UG.Circle
 getMaxNonIntersectingCircle circle circles offset = getMaxCircleLimit 0 circle circles offset
     where

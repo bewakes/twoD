@@ -39,6 +39,12 @@ rotateAboutPoint :: Point -> Float -> Point -> Point
 rotateAboutPoint center@(cx, cy) alpha
     = translateBy center . rotateAboutOrigin alpha . translateBy (-cx, -cy)
 
+scale :: Float -> Point -> Point
+scale f (x, y) = (f * x, f * y)
+
+scaleAbout :: Float -> Point -> Point -> Point
+scaleAbout f q p = ((1 - f) `scale` q) `translateBy` (f `scale` p)
+
 rotateAboutOrigin :: Float -> Point -> Point
 rotateAboutOrigin alpha (x, y)
     = (
