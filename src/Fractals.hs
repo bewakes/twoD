@@ -1,5 +1,5 @@
 module Fractals (
-      run
+    run
 ) where
 
 import qualified Utils.Geometry as UG
@@ -44,6 +44,10 @@ iterateTriangles count triangle = triangle: concatMap nextIterate children
 
 triangle = UG.getEqTriangleAtOrigin 100
 
+renderTrianglesEachSec :: UG.Triangle -> Float -> G.Picture
+renderTrianglesEachSec triangle sec = G.Pictures $
+    map (renderTriangle (G.Color G.blue)) (iterateTriangles (round sec :: Int) triangle)
+
 renderTriangles :: IO ()
 renderTriangles = G.display (G.InWindow "Fractals" (500, 500) (20, 20)) G.black $ G.Pictures $
     map (renderTriangle (G.Color G.blue)) (iterateTriangles 6 triangle)
@@ -83,4 +87,5 @@ renderSerspinskiMonadic points
 -- run = renderSerspinskiRandom 9000 triangleVerts (0.0, 0.0)
 -- run = renderSerspinskiMonadic $ kleisliPow 8 serspinskiTriangleFunc (0.0, 0.0)
 
-run = renderSerspinskiMonadic $ kleisliPow 6 serspinskiHexFunc (0.0, 0.0)
+run = G.animate (G.InWindow "Animation" (500, 500) (0, 0)) G.black (renderTrianglesEachSec triangle)
+-- run = renderSerspinskiMonadic $ kleisliPow 6 serspinskiHexFunc (0.0, 0.0)
