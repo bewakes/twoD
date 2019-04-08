@@ -12,6 +12,16 @@ data Triangle = Triangle Point Point Point
 distance :: (Float, Float) -> (Float, Float) -> Float
 distance (a, b) (c, d) = sqrt $ (a - c) * (a - c) + (b - d) * (b - d)
 
+add :: Point -> Point -> Point
+add (a, b) (c, d) = (a+c, b+d)
+
+mul :: Point -> Float -> Point
+mul (a, b) s = (a*s, b*s)
+
+normalize :: Point -> Point
+normalize (x, y) = (x / d, y / d)
+    where d = sqrt $ x*x + y*y
+
 doCirclesIntersect :: Circle -> Circle -> Float -> Bool
 doCirclesIntersect (x1, y1, r1) (x2, y2, r2) offset = distance (x1, y1) (x2, y2) < r1 + r2 + offset
 
@@ -60,3 +70,12 @@ getEqTriangleAtOrigin radius = Triangle a b c
     where a = (0.0, radius)
           b = rotateAboutOrigin (2.0 * pi / 3.0) a
           c = rotateAboutOrigin (2.0 * pi / 3.0) b
+
+
+circlesCollide :: Circle -> Circle -> Bool
+circlesCollide (x1, y1, r1) (x2, y2, r2) = distance (x1, y1) (x2, y2) <= r1 + r2 
+
+circleCollideWithLine :: Circle -> Line -> Bool
+circleCollideWithLine (x, y, r) ((x1, y1), (x2, y2)) = not outsideLine && distFromLine <= r
+    where outsideLine = ((x - x1)*(x2-x1) + (y-y1) * (y2-y1)) * ((x - x2)*(x1-x2) + (y-y2) * (y1-y2)) > 0
+          distFromLine = abs ((y2-y1)*x - (x2-x1)*y + x2*y1 - x1*y2) / distance (x1, y1) (x2, y2)

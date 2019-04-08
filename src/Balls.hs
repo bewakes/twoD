@@ -5,22 +5,32 @@ import qualified Graphics.Gloss as G
 import Graphics.Gloss.Data.ViewPort
 
 import qualified Utils.Geometry as UG
+import qualified Physics.Kinematics as PK
 
 data BallState = BallState {
-      ballRadius :: Float
-    , ax :: Float -- x acceleration
-    , ay :: Float -- y acceleration
-    , vx :: Float -- x velocity
-    , vy :: Float -- y velocity
-    , currentPosition :: UG.Point
+      radius :: Float
+    , acc :: (Float, Float)
+    , vel :: (Float, Float)
+    , position :: UG.Point
     , prevPositions :: [UG.Point]
     , velCoeff :: Float
+    , mass :: Float
 }
+
+ax :: BallState -> Float
+ax state = (fst . acc) state
+ay state = (snd . acc) state
+vx state = (fst . vel) state
+vy state = (snd . vel) state
+x state = (fst . position) state
+y state = (snd . position) state
 
 data GameState = GameState {
       ballStates :: [BallState]
-    , groundHeight :: Float
+    , rigidLines :: [UG.Line]
 }
+
+infinity = 9999999999999
 
 width = 500
 height = 500
@@ -34,60 +44,57 @@ gravity = 8.0 / (fromIntegral fps :: Float)
 
 ballState :: BallState
 ballState = BallState {
-      ballRadius = 10
-    , ax = 0
-    , ay = -gravity
-    , vx = 0
-    , vy = 0
-    , currentPosition = (200, 100)
+      radius = 10
+    , acc = (0, -gravity)
+    , vel = (0, 0)
+    , position = (200, 100)
     , prevPositions = []
     , velCoeff = 0.7
+    , mass = 1
 }
 
-ballstates = map (\x -> ballState {currentPosition = (x, x) }) (take 40 [-500, -475..])
+ballstates = map (\x -> ballState {position = (x, x) }) (take 40 [-500, -475..])
+sceneLines = [((300, 300), (400, 400))]
 
 initialState :: GameState
 initialState = GameState {
       ballStates = ballstates
-    , groundHeight = -500
+    , rigidLines = sceneLines
 }
 
-threshold = 4 * gravity
+threshold =  1.8 * gravity
 
 thresholdedVel :: Float -> Float
 thresholdedVel v = if v < threshold then 0 else v
 
-shouldBounce :: UG.Point -> BallState -> GameState -> Bool
-shouldBounce newPos currState gameSate = ballYPos <= groundHeight gameSate + ballRadius currState
-    where ballYPos = snd newPos 
+resultantVelocity :: UG.Point -> GameState -> BallState -> UG.Point
+resultantVelocity newPos@(newX, newY) gState bState = foldl velIfCollide (vel bState) filteredBalls
+    where filteredBalls = filter (\x -> position x /= newPos) (ballStates gState)
+          velIfCollide velocity b2 | UG.circlesCollide (newX, newY, radius bState) (x b2, y b2, radius b2) = (0, 0)
+                             | otherwise = fst $ PK.collide (mass bState, vel bState) (mass b2, vel b2)
 
 nextBallState :: Float -> GameState -> BallState -> BallState
 nextBallState sec gState currState = currState {
-          currentPosition = if bounce then (x, gHeight + ballRadius currState) else newPos
-        , prevPositions = currentPosition currState : prevPositions currState
-        , vy = if bounce then thresholdedVel (- vy currState * coeff) else newVy 
+          position = newPos
+        , prevPositions = position currState : prevPositions currState
+        , vel = newVel
     }
-    where newVy = vy currState + ay currState
-          (x, y) = currentPosition currState
-          newPos = (x, y + vy currState)
-          gHeight = groundHeight gState
-          bounce = shouldBounce newPos currState gState
-          coeff = velCoeff currState
+    where (x, y) = position currState
+          newPos = position currState `UG.add` vel currState
+          newVel = acc currState `UG.add` resultantVelocity newPos gState currState
 
 nextState :: Float -> GameState -> GameState
 nextState sec currState = currState {
     ballStates = map (nextBallState sec currState) $ ballStates currState
 }
 
-renderGround :: GameState -> G.Picture
-renderGround currState = G.Color G.blue $ G.Line [(-w, h), (w, h)]
-    where w = fromIntegral width :: Float
-          h = groundHeight currState
+renderLine :: UG.Line -> G.Picture
+renderLine (start, end) = G.Color G.blue $ G.Line [start, end]
 
 renderState :: GameState -> G.Picture
-renderState currState = G.Pictures (renderGround currState : balls)
+renderState currState = G.Pictures (map renderLine (rigidLines currState) ++ balls)
     where ballstates = ballStates currState
-          renderBall (BallState r ax ay vx vy (x, y) pp vc) = G.Color G.red $ G.translate x y $ G.ThickCircle 0 (2*r)
+          renderBall (BallState r acc vel (x, y) pp vc m) = G.Color G.red $ G.translate x y $ G.ThickCircle 0 (2*r)
           balls = map renderBall ballstates
 
 updateGame :: ViewPort -> Float -> GameState -> GameState
