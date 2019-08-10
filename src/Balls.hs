@@ -53,7 +53,11 @@ ballState = BallState {
     , mass = 1
 }
 
-ballstates = map (\x -> ballState {position = (x, x) }) (take 40 [-500, -475..])
+-- ballstates = map (\x -> ballState {position = (x, x) }) (take 40 [-500, -475..])
+ballstates = [
+      ballState { position=(100,100), acc = (0, 0), vel=(5, 5), mass=0.2 }
+    , ballState { position=(200,200), acc = (0, 0), vel=(-5, -5) }
+    ]
 sceneLines = [((300, 300), (400, 400))]
 
 initialState :: GameState
@@ -67,11 +71,11 @@ threshold =  1.8 * gravity
 thresholdedVel :: Float -> Float
 thresholdedVel v = if v < threshold then 0 else v
 
-resultantVelocity :: UG.Point -> GameState -> BallState -> UG.Point
-resultantVelocity newPos@(newX, newY) gState bState = foldl velIfCollide (vel bState) filteredBalls
-    where filteredBalls = filter (\x -> position x /= newPos) (ballStates gState)
-          velIfCollide velocity b2 | UG.circlesCollide (newX, newY, radius bState) (x b2, y b2, radius b2) = (0, 0)
-                             | otherwise = fst $ PK.collide (mass bState, vel bState) (mass b2, vel b2)
+resultantVelocity :: GameState -> BallState -> UG.Point
+resultantVelocity gState bState = foldl velIfCollide (vel bState) filteredBalls
+    where filteredBalls = filter (\ball -> position ball /= position bState) (ballStates gState)
+          velIfCollide velocity b2 | UG.circlesCollide (x bState, y bState, radius bState) (x b2, y b2, radius b2) = fst $ PK.collide (mass bState, vel bState) (mass b2, vel b2)
+                             | otherwise = velocity
 
 nextBallState :: Float -> GameState -> BallState -> BallState
 nextBallState sec gState currState = currState {
@@ -81,7 +85,7 @@ nextBallState sec gState currState = currState {
     }
     where (x, y) = position currState
           newPos = position currState `UG.add` vel currState
-          newVel = acc currState `UG.add` resultantVelocity newPos gState currState
+          newVel = acc currState `UG.add` resultantVelocity gState currState
 
 nextState :: Float -> GameState -> GameState
 nextState sec currState = currState {
