@@ -18,12 +18,12 @@ data BallState = BallState {
 }
 
 ax :: BallState -> Float
-ax state = (fst . acc) state
-ay state = (snd . acc) state
-vx state = (fst . vel) state
-vy state = (snd . vel) state
-x state = (fst . position) state
-y state = (snd . position) state
+ax = fst . acc
+ay = snd . acc
+vx = fst . vel
+vy = snd . vel
+x = fst . position
+y = snd . position
 
 data GameState = GameState {
       ballStates :: [BallState]
