@@ -1,0 +1,83 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: cf3026c500dfeb1470cc7a0b22c1bfb6b263941f1bde1b2b7d8648664cd63d67
+
+name:           twoD
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/bewakes/twoD#readme>
+homepage:       https://github.com/bewakes/twoD#readme
+bug-reports:    https://github.com/bewakes/twoD/issues
+author:         Bibek Pandey
+maintainer:     bewakepandey@gmail.com
+copyright:      2019 Bibek Pandey
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/bewakes/twoD
+
+library
+  exposed-modules:
+      Balls
+      Diagrams.Main
+      Fractals
+      GameOfLife
+      Physics.Kinematics
+      RandomCircles
+      Utils.Conversion
+      Utils.GameObject
+      Utils.Geometry
+      Utils.Kleisli
+      Utils.Random
+      Utils.ShapesColors
+  other-modules:
+      Paths_twoD
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.7 && <5
+    , gloss >=1.10 && <2
+    , GLUT
+    , random ==1.1
+  default-language: Haskell2010
+
+executable twoD-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_twoD
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , gloss >=1.10 && <2
+    , GLUT
+    , random ==1.1
+    , twoD
+  default-language: Haskell2010
+
+test-suite twoD-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      PhysicsSpec.KinematicsSpec
+      Paths_twoD
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , gloss >=1.10 && <2
+    , glut >=2.7.0
+    , random ==1.1
+    , twoD
+  default-language: Haskell2010

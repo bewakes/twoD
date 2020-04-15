@@ -23,6 +23,7 @@ dependencies:
 - base >= 4.7 && < 5
 - random == 1.1
 - gloss >= 1.10 && < 2
+- glut >= 2.7.0
 
 library:
   source-dirs: src

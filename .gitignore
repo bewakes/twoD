@@ -1,3 +1,5 @@
+*.hi
+*.o
 .stack-work/
-twoD.cabal
-*~
+dist-newstyle/
+cabal.project.local~
